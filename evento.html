@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Evento · Pastora Simone</title>
+  <meta name="description" content="Eventos da Pastora Simone: informações, localização e inscrição." />
+  <meta property="og:title" content="Eventos · Pastora Simone" />
+  <meta property="og:image" content="img/logo-simone.png" />
+  <meta name="theme-color" content="#1a1510" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Jost:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/evento.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { background: #1a1510; color: #efe6d4; }
+    a { color: inherit; }
+    :focus-visible { outline: 2px solid #e0b25a; outline-offset: 3px; }
+  </style>
+</head>
+<body>
+  <div id="demo" class="e-demo" hidden>Modo demonstração: o Firebase ainda não foi configurado (js/firebase-config.js). As inscrições não são gravadas.</div>
+  <main class="event-site carregando" id="evento">Carregando evento...</main>
+
+  <div class="e-modal" id="videoModal" hidden role="dialog" aria-label="Vídeo do convite">
+    <div class="box">
+      <div class="scr" id="videoTela"></div>
+      <div class="bot"><span id="videoLegenda">Convite da Pastora Simone</span><button class="close" id="videoFechar" type="button">Ver o site</button></div>
+    </div>
+  </div>
+
+  <script type="module" src="js/evento.js"></script>
+</body>
+</html>

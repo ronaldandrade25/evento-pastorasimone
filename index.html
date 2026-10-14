@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Pastora Simone · Escola Bíblica</title>
+  <meta name="description" content="Escola de formação bíblica com a Pastora Simone: aulas gravadas, apostilas, devocional e eventos." />
+  <meta property="og:title" content="Pastora Simone · Escola Bíblica" />
+  <meta property="og:image" content="img/logo-simone.png" />
+  <meta name="theme-color" content="#a8740f" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Pastora Simone" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link href="https://fonts.googleapis.com/css2?family=Poiret+One&family=Jost:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="css/plataforma.css" />
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container header-container">
+      <div class="header-left">
+        <a class="logo" href="#topo"><img src="img/logo-simone.png" alt="" /><span><b>Pastora Simone</b><small>Escola Bíblica</small></span></a>
+        <nav class="nav">
+          <a href="#cursos">Cursos</a>
+          <a href="#eventos" id="navEventos" class="hidden">Eventos</a>
+          <a href="#planos">Planos</a>
+          <a href="#sobre">Sobre</a>
+          <a href="#faq">Dúvidas</a>
+        </nav>
+      </div>
+      <div class="header-actions">
+        <a href="#planos" class="btn btn-outline btn-sm">Inscrever-me</a>
+        <button class="btn btn-ghost btn-sm hidden" data-instalar type="button"><i class="fa-solid fa-mobile-screen"></i> <span>Instalar app</span></button>
+        <button class="btn btn-red btn-sm" id="btnEntrar"><i class="fa-solid fa-right-to-bracket"></i> <span>Entrar</span></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="topo">
+    <div class="container hero-inner">
+      <img class="emblem" src="img/logo-simone.png" alt="Logo Simone" />
+      <span class="eyebrow">Escola de Formação Bíblica</span>
+      <h1><span id="heroPrefixo" class="plain">Cresça na Palavra com</span> <span id="heroDestaque">propósito</span> <span id="heroSufixo" class="plain">e profundidade</span></h1>
+      <p class="lead" id="heroDescricao">Aulas gravadas com a Pastora Simone para quem quer conhecer as Escrituras, fortalecer a vida de oração e servir melhor na igreja e em casa.</p>
+      <div class="hero-buttons">
+        <a href="#planos" class="btn btn-red btn-lg">Quero começar</a>
+        <button class="btn btn-outline btn-lg" data-open-login>Já sou aluno</button>
+      </div>
+      <div class="verse-box">
+        <p class="verse" id="heroVersiculo">“Lâmpada para os meus pés é tua palavra, e luz para o meu caminho.”</p>
+        <p class="ref" id="heroReferencia">Salmos 119:105</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+    <div class="hero-stats">
+      <div><strong id="statCursos">6</strong><small>cursos</small></div>
+      <div><strong>100%</strong><small>online</small></div>
+      <div><strong>24h</strong><small>no seu tempo</small></div>
+      <div><strong>7 dias</strong><small>de garantia</small></div>
+    </div>
+  </div>
+
+  <!-- VÍDEO DE APRESENTAÇÃO (só aparece se houver vídeo nas Configurações) -->
+  <section class="block hidden" id="secVideo">
+    <div class="container">
+      <div class="section-head"><span class="eyebrow">Conheça a Escola</span><h2>Uma palavra da Pastora Simone</h2></div>
+      <div class="hero-video"><div id="heroVideo"></div></div>
+    </div>
+  </section>
+
+  <!-- CURSOS (vêm do Firestore: coleção "vitrine") -->
+  <section class="block" id="cursos">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Grade de cursos</span>
+        <h2>Trilhas de estudo</h2>
+        <p>As aulas com selo <strong>Grátis</strong> você pode assistir agora mesmo.</p>
+      </div>
+      <div class="modules" id="gradeAulas"><div class="empty" style="grid-column: 1/-1">Carregando aulas...</div></div>
+    </div>
+  </section>
+
+  <!-- O QUE RECEBE -->
+  <section class="block alt">
+    <div class="container">
+      <div class="section-head"><span class="eyebrow">O que você recebe</span><h2>Tudo para estudar com constância</h2></div>
+      <div class="benefits">
+        <div class="benefit"><i class="fa-solid fa-circle-play"></i><h3>Aulas gravadas</h3><p>Assista quando puder e retome de onde parou, no celular ou no computador.</p></div>
+        <div class="benefit"><i class="fa-solid fa-book-bible"></i><h3>Apostilas</h3><p>Material em PDF e roteiros de estudo para cada curso.</p></div>
+        <div class="benefit"><i class="fa-solid fa-sun"></i><h3>Versículo do dia</h3><p>Uma palavra para o seu dia sempre que entrar na área do aluno.</p></div>
+        <div class="benefit"><i class="fa-brands fa-whatsapp"></i><h3>Grupo de oração</h3><p>Comunidade no WhatsApp para tirar dúvidas e orar juntos.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRÓXIMOS EVENTOS (vêm do Firestore: eventos publicados) -->
+  <section class="block hidden" id="eventos">
+    <div class="container">
+      <div class="section-head"><span class="eyebrow">Agenda</span><h2>Próximos eventos</h2><p>Garanta sua vaga nos encontros presenciais com a Pastora Simone.</p></div>
+      <div class="eventos-lista" id="listaEventos"></div>
+    </div>
+  </section>
+
+  <!-- PLANOS -->
+  <section class="block" id="planos">
+    <div class="container">
+      <div class="section-head"><span class="eyebrow">Planos</span><h2>Escolha sua matrícula</h2><p>Pagamento único, sem mensalidade.</p></div>
+      <div class="pricing" id="listaPlanos"><div class="empty">Carregando planos...</div></div>
+    </div>
+  </section>
+
+  <!-- DEPOIMENTOS -->
+  <section class="block alt" id="depoimentos">
+    <div class="container">
+      <div class="section-head"><span class="eyebrow">Depoimentos</span><h2>Vidas edificadas</h2></div>
+      <div class="testimonials">
+        <div class="testimonial"><div class="stars">★★★★★</div><p>As aulas de Panorama Bíblico me deram uma visão que eu não tinha em vinte anos de igreja. Hoje leio a Bíblia entendendo o contexto.</p><strong>Ana Paula</strong><small>Líder de célula</small></div>
+        <div class="testimonial"><div class="stars">★★★★★</div><p>O curso de oração mudou minha rotina. Assisto uma aula de manhã antes do trabalho e faço o roteiro da apostila.</p><strong>Rosângela</strong><small>Aluna do plano Discípula</small></div>
+        <div class="testimonial"><div class="stars">★★★★★</div><p>Uso o material de Liderança com as mulheres do ministério. A didática da Pastora Simone é simples e profunda ao mesmo tempo.</p><strong>Débora</strong><small>Ministério de mulheres</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOBRE -->
+  <section class="block" id="sobre">
+    <div class="container about-grid">
+      <div class="teacher-card">
+        <div class="teacher-foto" id="fotoProfessor"><img class="logo-foto" src="img/logo-simone.png" alt="" /></div>
+        <div><h3 id="nomeProfessor">Pastora Simone</h3><span id="cargoProfessor">Professora e pastora</span></div>
+      </div>
+      <div class="txt">
+        <span class="eyebrow">Quem ensina</span>
+        <h2 style="font-size:clamp(1.9rem,4vw,2.7rem)">Pastora Simone</h2>
+        <div id="textoProfessor" style="display:grid;gap:14px"></div>
+        <div><a class="btn btn-green" id="linkSuporte" href="#" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> Falar no WhatsApp</a></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="block alt" id="faq">
+    <div class="container">
+      <div class="section-head"><span class="eyebrow">Dúvidas</span><h2>Perguntas frequentes</h2></div>
+      <div class="faq">
+        <details><summary>Como acesso as aulas depois da inscrição?</summary><p>Você recebe seu e-mail e senha. Depois é só clicar em “Entrar” no topo do site.</p></details>
+        <details><summary>Preciso ter estudado teologia?</summary><p>Não. Os cursos começam do básico e servem para quem está começando e para quem já serve na igreja.</p></details>
+        <details><summary>Por quanto tempo tenho acesso?</summary><p>O prazo de cada plano é informado na matrícula. O plano Ministério tem acesso vitalício.</p></details>
+        <details><summary>Tem garantia?</summary><p>Sim, 7 dias. Se não for para você, devolvemos o valor.</p></details>
+        <details><summary>Esqueci minha senha, e agora?</summary><p>Clique em “Entrar”, digite seu e-mail e use “Esqueci minha senha”. Você recebe um link para criar uma nova.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="container">
+      <div class="cta-final">
+        <span class="eyebrow">Matrículas abertas</span>
+        <h2>Comece hoje sua jornada na Palavra</h2>
+        <p class="verse">“Buscai primeiro o Reino de Deus.” <span class="ref">Mateus 6:33</span></p>
+        <a href="#planos" class="btn btn-red btn-lg">Quero minha vaga</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>© <span id="ano"></span> Pastora Simone · Escola Bíblica</footer>
+
+  <!-- MODAL DE LOGIN -->
+  <div class="modal" id="loginModal">
+    <div class="modal-overlay" data-close-modal></div>
+    <div class="modal-content">
+      <button class="icon-btn modal-close" data-close-modal aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+      <div class="logo" style="margin-bottom: 20px"><img src="img/logo-simone.png" alt="" /><span><b>Pastora Simone</b><small>Escola Bíblica</small></span></div>
+      <h3>Entrar na plataforma</h3>
+      <p class="sub">Use o e-mail e a senha que você recebeu.</p>
+      <form id="loginForm">
+        <div class="field" style="margin-bottom: 14px"><label for="loginEmail">E-mail</label><input type="email" id="loginEmail" required autocomplete="email" placeholder="seuemail@exemplo.com" /></div>
+        <div class="field"><label for="loginSenha">Senha</label><input type="password" id="loginSenha" required autocomplete="current-password" placeholder="••••••••" /></div>
+        <div class="form-error" id="loginErro"></div>
+        <button class="btn btn-red" style="width: 100%; margin-top: 8px" type="submit" id="loginBtn">Entrar</button>
+      </form>
+      <p style="text-align: center; margin-top: 14px"><button class="link-btn" id="esqueciSenha" type="button">Esqueci minha senha / primeiro acesso</button></p>
+    </div>
+  </div>
+
+  <!-- MODAL DE AULA GRÁTIS -->
+  <div class="modal" id="aulaGratisModal">
+    <div class="modal-overlay" data-close-modal></div>
+    <div class="modal-content video">
+      <button class="icon-btn modal-close" data-close-modal aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+      <div class="player-frame" id="aulaGratisFrame"></div>
+      <div class="player-info">
+        <div><span class="eyebrow">Aula grátis</span><h3 id="aulaGratisTitulo"></h3><p id="aulaGratisDesc"></p></div>
+        <div class="actions"><a href="#planos" class="btn btn-red btn-sm" data-close-modal>Quero o curso completo</a></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/vendas.js"></script>
+</body>
+</html>

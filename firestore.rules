@@ -1,0 +1,131 @@
+rules_version = '2';
+
+// =====================================================================
+// REGRAS DE SEGURANÇA - Pastora Simone · Escola Bíblica
+// Troque o e-mail abaixo pelo MESMO e-mail de js/firebase-config.js
+// (em letras minúsculas).
+// =====================================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function logado() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return logado() && request.auth.token.email == 'admin@seudominio.com';
+    }
+
+    function alunoAtual() {
+      return get(/databases/$(database)/documents/alunos/$(request.auth.uid)).data;
+    }
+
+    // Plano com acesso a todas as aulas (campo gravado no cadastro do aluno;
+    // alunos antigos: o plano "completo")
+    function acessoTotal() {
+      return alunoAtual().get('acessoTotal', alunoAtual().plano == 'completo') == true;
+    }
+
+    function alunoAtivo() {
+      return logado()
+        && exists(/databases/$(database)/documents/alunos/$(request.auth.uid))
+        && alunoAtual().status == 'ativo';
+    }
+
+    // Configurações do site (preços, módulos, links): todos leem, só o admin altera
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Vitrine: versão pública das aulas, usada no site de vendas (sem o vídeo das aulas pagas)
+    match /vitrine/{aulaId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Aulas completas (com o código do YouTube): só alunos ativos, respeitando o plano
+    match /aulas/{aulaId} {
+      allow read: if isAdmin()
+        || (alunoAtivo()
+            && resource.data.status == 'publicada'
+            && (acessoTotal()
+                || resource.data.plano == 'todos'
+                || resource.data.gratuita == true));
+      allow write: if isAdmin();
+    }
+
+    // Materiais de apoio: alunos ativos, respeitando o plano
+    match /materiais/{id} {
+      allow read: if isAdmin()
+        || (alunoAtivo()
+            && resource.data.status == 'publicada'
+            && (acessoTotal() || resource.data.plano == 'todos'));
+      allow write: if isAdmin();
+    }
+
+    // Alunos: cada aluno lê só o próprio cadastro e só pode mudar o próprio progresso
+    match /alunos/{alunoId} {
+      allow read: if isAdmin() || (logado() && request.auth.uid == alunoId);
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin()
+        || (logado()
+            && request.auth.uid == alunoId
+            && resource.data.status == 'ativo'
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['progresso', 'ultimoAcesso']));
+    }
+
+    // Financeiro: somente o superadmin
+    match /lancamentos/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    // ================= EVENTOS =================
+    // Site público de cada evento (evento.html) + inscrições.
+    function evento(eventoId) {
+      return get(/databases/$(database)/documents/eventos/$(eventoId)).data;
+    }
+    function eventoDepois(eventoId) {
+      return getAfter(/databases/$(database)/documents/eventos/$(eventoId)).data;
+    }
+    function textoOpcional(d, campo) {
+      return !(campo in d) || (d[campo] is string && d[campo].size() <= 120);
+    }
+
+    match /eventos/{eventoId} {
+      // Público vê só eventos publicados ou encerrados (rascunho fica escondido)
+      allow read: if isAdmin() || resource.data.status in ['publicado', 'encerrado'];
+      allow create, delete: if isAdmin();
+      // O público só pode somar 1 no contador de inscritos, junto com a própria inscrição
+      allow update: if isAdmin() || (
+        resource.data.status == 'publicado'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['inscritos', 'ultimaInscricao'])
+        && request.resource.data.inscritos == resource.data.get('inscritos', 0) + 1
+        && request.resource.data.inscritos <= resource.data.vagas
+        && request.resource.data.ultimaInscricao is string
+        && !exists(/databases/$(database)/documents/eventos/$(eventoId)/inscricoes/$(request.resource.data.ultimaInscricao))
+        && existsAfter(/databases/$(database)/documents/eventos/$(eventoId)/inscricoes/$(request.resource.data.ultimaInscricao))
+      );
+
+      // Inscrições: o público só cria (no mesmo envio que soma o contador); ver e apagar, só o admin
+      match /inscricoes/{inscricaoId} {
+        allow read, update, delete: if isAdmin();
+        allow create: if isAdmin() || (
+          evento(eventoId).status == 'publicado'
+          && eventoDepois(eventoId).ultimaInscricao == inscricaoId
+          && eventoDepois(eventoId).inscritos == evento(eventoId).get('inscritos', 0) + 1
+          && request.resource.data.keys().hasOnly(['nome', 'whatsapp', 'email', 'cidade', 'igreja', 'noGrupo', 'criadoEm'])
+          && request.resource.data.nome is string
+          && request.resource.data.nome.size() >= 3 && request.resource.data.nome.size() <= 120
+          && request.resource.data.whatsapp is string
+          && request.resource.data.whatsapp.size() >= 10 && request.resource.data.whatsapp.size() <= 20
+          && textoOpcional(request.resource.data, 'email')
+          && textoOpcional(request.resource.data, 'cidade')
+          && textoOpcional(request.resource.data, 'igreja')
+          && request.resource.data.noGrupo == false
+          && request.resource.data.criadoEm == request.time
+        );
+      }
+    }
+  }
+}
