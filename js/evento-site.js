@@ -24,9 +24,13 @@ export const EVENTO_PADRAO = {
   local: "", endereco: "", cidade: "",
   vagas: 100, valor: "Entrada gratuita",
   campos: { email: false, cidade: true, igreja: true },
+  pagamento: { pix: false, cartao: false, boleto: false, dinheiro: false, info: "" },
   grupoVip: "", mostrarQr: false,
   inscritos: 0,
 };
+
+export const FORMAS_PAGAMENTO = { pix: "Pix", cartao: "Cartão", boleto: "Boleto", dinheiro: "Dinheiro" };
+export const formasAceitas = (ev) => Object.keys(FORMAS_PAGAMENTO).filter((k) => ev.pagamento?.[k]).map((k) => FORMAS_PAGAMENTO[k]);
 
 // Primeiro evento, feito a partir da arte de divulgação.
 // Data, local, vagas, vídeo e depoimentos são de EXEMPLO: a Pastora troca no painel.
@@ -170,6 +174,7 @@ export function renderEvento(root, ev, opcoes = {}) {
   <section class="e-sec alt" id="${pre}-insc"><div class="e-wrap e-reg">
     <div class="side-info"><span class="e-eyebrow">Inscrição</span><h2 class="gold" style="font-size:clamp(1.6rem,4cqi,2.5rem)">Garanta sua vaga</h2>
       <p style="margin:0">${ev.valor ? esc(ev.valor) + ". " : ""}As vagas são limitadas e a inscrição leva menos de um minuto.</p>
+      ${formasAceitas(ev).length ? `<p style="margin:0"><span class="e-eyebrow">Formas de pagamento</span><br />${formasAceitas(ev).map((f) => `<span class="e-pag">${f}</span>`).join("")}</p>${ev.pagamento?.info ? `<p style="margin:0;font-size:.86rem;white-space:pre-line">${esc(ev.pagamento.info)}</p>` : ""}` : ""}
       <div class="e-bar"><i data-insc-barra style="width:${ocup}%"></i></div>
       <p style="margin:0;font-size:.86rem"><b style="color:var(--e-text)" data-insc-n>${Number(ev.inscritos) || 0}</b> de ${Number(ev.vagas) || 0} vagas preenchidas</p></div>
     <div data-reg-slot>${formularioHtml(ev, pre)}</div>

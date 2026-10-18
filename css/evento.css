@@ -207,3 +207,4 @@
   .rv { opacity: 1; transform: none; }
   .e-fx i { display: none; }
 }
+.e-pag { display: inline-block; margin: 6px 6px 0 0; padding: 4px 12px; border: 1px solid var(--e-gold); border-radius: 999px; font-size: .8rem; color: var(--e-gold); }

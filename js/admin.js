@@ -948,7 +948,7 @@ const IMAGENS_EVENTO = {
   qrCode: { maxL: 500, maxA: 500, tipo: "image/png" },
 };
 const linkEvento = (ev) => new URL(`evento.html?e=${encodeURIComponent(ev.slug || "")}`, location.href).href;
-const copiaEvento = (ev) => JSON.parse(JSON.stringify({ ...EVENTO_PADRAO, ...ev, campos: { ...EVENTO_PADRAO.campos, ...(ev.campos || {}) } }));
+const copiaEvento = (ev) => JSON.parse(JSON.stringify({ ...EVENTO_PADRAO, ...ev, campos: { ...EVENTO_PADRAO.campos, ...(ev.campos || {}) }, pagamento: { ...EVENTO_PADRAO.pagamento, ...(ev.pagamento || {}) } }));
 const statusEvento = { rascunho: ["rascunho", "Rascunho"], publicado: ["publicado", "Publicado"], encerrado: ["encerrado", "Encerrado"] };
 
 function aoAtualizarEventos() {
@@ -1082,6 +1082,10 @@ function secaoEvento(ev) {
       <div class="field"><label>Campos do formulário</label><div style="display:flex;gap:18px;flex-wrap:wrap">
         <label class="check"><input type="checkbox" checked disabled /> Nome</label><label class="check"><input type="checkbox" checked disabled /> WhatsApp</label>
         ${checkEv("campos.email", "E-mail")}${checkEv("campos.cidade", "Cidade")}${checkEv("campos.igreja", "Igreja")}</div></div>
+      <div class="field"><label>Formas de pagamento aceitas</label><div style="display:flex;gap:18px;flex-wrap:wrap">
+        ${checkEv("pagamento.pix", "Pix")}${checkEv("pagamento.cartao", "Cartão")}${checkEv("pagamento.boleto", "Boleto")}${checkEv("pagamento.dinheiro", "Dinheiro")}</div>
+        <div class="help">Aparecem na seção de inscrição do site. Deixe tudo desmarcado se o evento é gratuito.</div></div>
+      <div class="field"><label for="ev-pagamento-info">Instruções de pagamento</label><textarea id="ev-pagamento-info" data-ev="pagamento.info" rows="3" maxlength="500" placeholder="Ex.: Chave Pix (CNPJ): 00.000.000/0001-00. Envie o comprovante no WhatsApp.">${esc(ev.pagamento?.info)}</textarea></div>
       ${campoEv("grupoVip", "Link do Grupo VIP no WhatsApp", 'placeholder="https://chat.whatsapp.com/..."', "url")}
       ${checkEv("mostrarQr", "Mostrar o QR Code do Grupo VIP no site (envie a imagem em Cores e imagens)")}</div>`;
     case "inscritos": {
