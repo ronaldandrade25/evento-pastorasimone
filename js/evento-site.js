@@ -234,7 +234,7 @@ export function atualizarContagem(root, ev) {
     el.innerHTML = `<div><strong>${y && new Date(y, m - 1, d).toDateString() === new Date().toDateString() ? "Hoje" : "—"}</strong><small>${y && diff > -864e5 ? "é o dia" : "evento realizado"}</small></div>`;
     return;
   }
-  const dd = Math.floor(diff / 864e5), h = Math.floor((diff % 864e5) / 36e5), mi = Math.floor((diff % 36e5) / 6e4);
-  el.innerHTML = [[dd, "dias"], [h, "horas"], [mi, "min"]]
+  const dd = Math.floor(diff / 864e5), h = Math.floor((diff % 864e5) / 36e5), mi = Math.floor((diff % 36e5) / 6e4), s = Math.floor((diff % 6e4) / 1e3);
+  el.innerHTML = [[dd, "dias"], [h, "horas"], [mi, "min"], [s, "seg"]]
     .map(([v, l]) => `<div><strong>${String(v).padStart(2, "0")}</strong><small>${l}</small></div>`).join("");
 }

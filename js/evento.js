@@ -4,6 +4,7 @@ import {
 } from "./firebase.js";
 import { esc } from "./comum.js";
 import { renderEvento, atualizarContagem, youtubeId, EVENTO_FORTALEZAS, LOGO } from "./evento-site.js";
+import { iniciarEfeitos, somSucesso } from "./efeitos.js";
 
 const root = document.getElementById("evento");
 const modal = document.getElementById("videoModal");
@@ -51,13 +52,17 @@ async function carregar() {
   document.body.style.background = ev.corFundo || "#1a1510";
   root.classList.remove("carregando");
   renderEvento(root, ev, { prefixo: "ev", onVideo: abrirVideo, onInscrever: inscrever });
-  setInterval(() => atualizarContagem(root, ev), 30000);
-  if (ev.videoAuto && youtubeId(ev) && ev.status === "publicado") abrirVideo();
+  setInterval(() => atualizarContagem(root, ev), 1000);
+  // o vídeo do convite só abre depois da abertura "A muralha cai"
+  iniciarEfeitos(root, ev).then(() => {
+    if (ev.videoAuto && youtubeId(ev) && ev.status === "publicado") abrirVideo();
+  });
 }
 
 async function inscrever(dados) {
   if (demo) {
     await new Promise((r) => setTimeout(r, 400));
+    somSucesso();
     return "";
   }
   try {
@@ -68,6 +73,7 @@ async function inscrever(dados) {
     batch.update(evRef, { inscritos: increment(1), ultimaInscricao: insRef.id });
     await batch.commit();
     ev.inscritos = (Number(ev.inscritos) || 0) + 1;
+    somSucesso();
     return "";
   } catch (e) {
     console.error(e);
