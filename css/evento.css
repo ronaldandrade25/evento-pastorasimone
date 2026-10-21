@@ -101,6 +101,14 @@
 .e-ok { border: 1px solid var(--e-accent); padding: 26px; display: grid; gap: 14px; text-align: center; justify-items: center; background: var(--e-card); }
 .e-ok h3 { color: var(--e-text); font-size: 1.3rem; }
 .e-ok p { margin: 0; color: var(--e-soft); }
+.e-form select { font: inherit; text-transform: none; letter-spacing: 0; color: var(--e-text); background: color-mix(in srgb, var(--e-bg) 70%, #000); border: 1px solid var(--e-line); border-radius: 2px; padding: 11px 12px; width: 100%; }
+.e-ing { display: grid; gap: 12px; width: 100%; text-align: left; }
+.e-ing label { display: grid; gap: 6px; font-size: .74rem; letter-spacing: .12em; text-transform: uppercase; color: var(--e-soft); }
+.e-ing input { font: inherit; text-transform: none; letter-spacing: 0; color: var(--e-text); background: color-mix(in srgb, var(--e-bg) 70%, #000); border: 1px solid var(--e-line); border-radius: 2px; padding: 11px 12px; width: 100%; }
+.e-ing .err { color: var(--e-soft); font-size: .84rem; margin: 0; }
+.e-ing-res { display: grid; gap: 12px; justify-items: center; }
+.e-ing-res canvas { width: 100%; max-width: 320px; height: auto; border: 1px solid var(--e-line); }
+.e-ing-res .e-btn { width: 100%; max-width: 320px; }
 .e-ok img { width: 160px; background: #fff; border-radius: 8px; padding: 6px; }
 .e-foot { border-top: 1px solid var(--e-line); padding-block: 24px; text-align: center; font-size: .8rem; color: var(--e-soft); }
 @container (max-width: 380px) { .e-top .lg span { display: none; } }

@@ -2,6 +2,7 @@
 // É o MESMO código na página pública (evento.html) e na prévia do celular no Superadmin,
 // então o que a Pastora vê no editor é exatamente o que vai ao ar.
 import { esc, extractYoutubeId } from "./comum.js";
+import { googleAgendaUrl } from "./ingresso.js";
 
 export const LOGO = "img/logo-simone.png";
 
@@ -111,6 +112,7 @@ function formularioHtml(ev, pre) {
     ${c.email ? `<label>E-mail<input type="email" id="${pre}-email" name="email" maxlength="120" autocomplete="email" placeholder="voce@email.com" /></label>` : ""}
     ${c.cidade ? `<label>Cidade<input type="text" id="${pre}-cidade" name="cidade" maxlength="120" placeholder="Onde você mora" /></label>` : ""}
     ${c.igreja ? `<label>Igreja<input type="text" id="${pre}-igreja" name="igreja" maxlength="120" placeholder="Igreja que frequenta" /></label>` : ""}
+    ${formasAceitas(ev).length ? `<label>Forma de pagamento<select id="${pre}-pagamento" name="formaPagamento" required><option value="">Escolha como vai pagar</option>${formasAceitas(ev).map((f) => `<option value="${esc(f)}">${esc(f)}</option>`).join("")}</select></label>` : ""}
     <p class="err" aria-live="polite"></p>
     <button class="e-btn" type="submit">Confirmar inscrição</button>
   </form>`;
@@ -193,8 +195,9 @@ async function enviarInscricao(e, root, ev, opcoes) {
   const erro = f.querySelector(".err");
   const v = (n) => (f.elements[n]?.value || "").trim();
   const dados = { nome: v("nome"), whatsapp: v("whatsapp") };
-  ["email", "cidade", "igreja"].forEach((k) => { if (f.elements[k] && v(k)) dados[k] = v(k); });
+  ["email", "cidade", "igreja", "formaPagamento"].forEach((k) => { if (f.elements[k] && v(k)) dados[k] = v(k); });
   erro.textContent = "";
+  if (f.elements.formaPagamento && !dados.formaPagamento) return (erro.textContent = "Escolha a forma de pagamento.");
   if (dados.nome.length < 3) return (erro.textContent = "Digite seu nome completo.");
   if (dados.whatsapp.replace(/\D/g, "").length < 10) return (erro.textContent = "Digite um WhatsApp com DDD, por exemplo (11) 9 0000-0000.");
   if (dados.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(dados.email)) return (erro.textContent = "Confira o e-mail digitado.");
@@ -213,19 +216,66 @@ async function enviarInscricao(e, root, ev, opcoes) {
   const num = root.querySelector("[data-insc-n]"), barra = root.querySelector("[data-insc-barra]");
   if (num) num.textContent = n;
   if (barra) barra.style.width = Math.min(100, Math.round((n / Math.max(1, Number(ev.vagas) || 1)) * 100)) + "%";
-  mostrarConfirmacao(root, ev, dados.nome);
+  mostrarConfirmacao(root, ev, dados.nome, dados);
 }
 
-export function mostrarConfirmacao(root, ev, nome) {
+export function mostrarConfirmacao(root, ev, nome, dados = {}) {
   const grupo = urlSegura(ev.grupoVip);
   const qr = ev.mostrarQr && imgSegura(ev.qrCode);
+  const agenda = googleAgendaUrl(ev);
   const slot = root.querySelector("[data-reg-slot]");
   if (!slot) return;
   slot.innerHTML = `<div class="e-ok"><span class="e-eyebrow" style="color:var(--e-accent)">Inscrição confirmada</span>
     <h3>Te esperamos, ${esc(String(nome).split(" ")[0])}!</h3>
     <p>${grupo || qr ? "Entre no Grupo VIP para receber os avisos e o lembrete no dia." : "Guarde a data na sua agenda. Até lá!"}</p>
     ${qr ? `<img src="${esc(qr)}" alt="QR Code do Grupo VIP" />` : ""}
-    ${grupo ? `<a class="e-btn wa" href="${esc(grupo)}" target="_blank" rel="noopener">${ICONE_WA} Entrar no Grupo VIP</a>` : ""}</div>`;
+    ${grupo ? `<a class="e-btn wa" href="${esc(grupo)}" target="_blank" rel="noopener">${ICONE_WA} Entrar no Grupo VIP</a>` : ""}
+    ${agenda ? `<a class="e-btn ghost" href="${esc(agenda)}" target="_blank" rel="noopener">Adicionar ao Google Agenda</a>` : ""}
+    <button class="e-btn ghost" type="button" data-ingresso-abrir>Gerar meu ingresso</button>
+    <div class="e-ing" data-ingresso hidden>
+      <label>Nome no ingresso<input type="text" name="ing-nome" maxlength="60" value="${esc(nome)}" /></label>
+      <label>Igreja<input type="text" name="ing-igreja" maxlength="60" value="${esc(dados.igreja || "")}" placeholder="Qual igreja você frequenta" /></label>
+      <label>Sua foto<input type="file" name="ing-foto" accept="image/*" /></label>
+      <button class="e-btn" type="button" data-ingresso-gerar>Gerar ingresso</button>
+      <p class="err" data-ingresso-msg aria-live="polite"></p>
+      <div class="e-ing-res" data-ingresso-res hidden>
+        <canvas data-cv-ingresso></canvas>
+        <button class="e-btn ghost" type="button" data-baixar="ingresso">Baixar ingresso</button>
+        <canvas data-cv-story></canvas>
+        <button class="e-btn" type="button" data-baixar="story">Postar no Instagram</button>
+        <button class="e-btn ghost" type="button" data-baixar="story-arquivo">Só baixar o Story</button>
+      </div>
+    </div></div>`;
+  const painel = slot.querySelector("[data-ingresso]");
+  slot.querySelector("[data-ingresso-abrir]").addEventListener("click", () => { painel.hidden = !painel.hidden; });
+  let artes = null;
+  slot.querySelector("[data-ingresso-gerar]").addEventListener("click", async (e) => {
+    const msg = slot.querySelector("[data-ingresso-msg]");
+    const q = (n) => painel.querySelector(`[name="${n}"]`);
+    const nomeIng = q("ing-nome").value.trim();
+    if (nomeIng.length < 3) return (msg.textContent = "Digite o nome que vai no ingresso.");
+    e.target.disabled = true; msg.textContent = "Gerando...";
+    const { desenharIngresso, desenharStory, lerFoto } = await import("./ingresso.js");
+    const d = { nome: nomeIng, igreja: q("ing-igreja").value.trim(), foto: await lerFoto(q("ing-foto").files[0]) };
+    artes = { ingresso: await desenharIngresso(ev, d), story: await desenharStory(ev, d) };
+    for (const [k, sel] of [["ingresso", "[data-cv-ingresso]"], ["story", "[data-cv-story]"]]) {
+      const cv = slot.querySelector(sel), src = artes[k];
+      cv.width = src.width; cv.height = src.height;
+      cv.getContext("2d").drawImage(src, 0, 0);
+    }
+    slot.querySelector("[data-ingresso-res]").hidden = false;
+    msg.textContent = d.foto ? "" : "Dica: envie uma foto para o ingresso ficar completo.";
+    e.target.disabled = false; e.target.textContent = "Gerar de novo";
+  });
+  slot.addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-baixar]");
+    if (!b || !artes) return;
+    const { postarInstagram, baixarCanvas } = await import("./ingresso.js");
+    const msg = slot.querySelector("[data-ingresso-msg]");
+    if (b.dataset.baixar === "ingresso") await baixarCanvas(artes.ingresso, "meu-ingresso.png");
+    else if (b.dataset.baixar === "story-arquivo") await baixarCanvas(artes.story, "story-eu-vou.png");
+    else msg.textContent = await postarInstagram(artes.story, "story-eu-vou.png");
+  });
   slot.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
