@@ -24,6 +24,9 @@ export function googleAgendaUrl(ev) {
   return "https://calendar.google.com/calendar/render?" + p.toString();
 }
 
+// "14:00" vira "14h"; "14:30" vira "14h30"
+const horaCurta = (h) => { const [hh, mm] = String(h).split(":").map(Number); return Number.isNaN(hh) ? String(h) : `${hh}h${mm ? String(mm).padStart(2, "0") : ""}`; };
+
 const carregarImg = (src) => new Promise((ok) => {
   if (!src) return ok(null);
   const i = new Image();
@@ -114,7 +117,7 @@ export async function desenharIngresso(ev, { nome, igreja, foto }) {
   if (igreja) centro(ctx, quebrar(ctx, igreja, W - 240, 1)[0], W / 2, 985);
   ctx.strokeStyle = ouro; ctx.setLineDash([10, 10]); ctx.beginPath(); ctx.moveTo(110, 1050); ctx.lineTo(W - 110, 1050); ctx.stroke(); ctx.setLineDash([]);
   ctx.fillStyle = "#efe6d4"; ctx.font = `500 34px ${SANS}`;
-  centro(ctx, `${dataLonga(ev)}${ev.hora ? " · " + ev.hora + "h" : ""}`, W / 2, 1115);
+  centro(ctx, `${dataLonga(ev)}${ev.hora ? " · " + horaCurta(ev.hora) : ""}`, W / 2, 1115);
   ctx.fillStyle = "#b9ab92"; ctx.font = `500 30px ${SANS}`;
   centro(ctx, [ev.local, ev.cidade].filter(Boolean).join(" · "), W / 2, 1165);
   ctx.fillStyle = ouro; ctx.font = `600 28px ${SANS}`; ctx.letterSpacing = "6px";
@@ -137,7 +140,7 @@ export async function desenharStory(ev, { nome, igreja, foto }) {
   ctx.fillStyle = "#efe6d4"; ctx.font = `700 80px ${SERIF}`;
   quebrar(ctx, ev.nome, W - 180, 2).forEach((l, i) => centro(ctx, l, W / 2, 1450 + i * 92));
   ctx.fillStyle = ouro; ctx.font = `500 42px ${SANS}`;
-  centro(ctx, `${dataLonga(ev)}${ev.hora ? " · " + ev.hora + "h" : ""}`, W / 2, 1670);
+  centro(ctx, `${dataLonga(ev)}${ev.hora ? " · " + horaCurta(ev.hora) : ""}`, W / 2, 1670);
   ctx.fillStyle = "#b9ab92"; ctx.font = `500 36px ${SANS}`;
   centro(ctx, [ev.local, ev.cidade].filter(Boolean).join(" · "), W / 2, 1735);
   ctx.fillStyle = ouro; ctx.font = `600 30px ${SANS}`;
@@ -147,8 +150,9 @@ export async function desenharStory(ev, { nome, igreja, foto }) {
 
 const paraBlob = (c) => new Promise((ok) => { try { c.toBlob((b) => ok(b), "image/png"); } catch { ok(null); } });
 
-// Compartilha o story (celular: abre o menu de compartilhar, onde aparece o Instagram).
-// No computador o Instagram não aceita publicação por site: a imagem é baixada para postar pelo app.
+// Leva a pessoa ao Instagram sem baixar a imagem. Celular: abre o menu de compartilhar com a arte
+// anexada. Sem esse menu: copia a arte e abre o Instagram para colar no Story.
+// (O Instagram não permite que um site publique sozinho.)
 export async function postarInstagram(canvas, nomeArquivo) {
   const blob = await paraBlob(canvas);
   if (!blob) return "Não foi possível preparar a imagem.";
@@ -161,8 +165,16 @@ export async function postarInstagram(canvas, nomeArquivo) {
       if (e.name === "AbortError") return "";
     }
   }
-  baixar(blob, nomeArquivo);
-  return "Imagem salva no seu aparelho. Abra o Instagram, crie um Story e escolha essa imagem.";
+  let copiada = false;
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    copiada = true;
+  } catch { /* sem permissão: segue só abrindo o Instagram */ }
+  if (/android|iphone|ipad|ipod/i.test(navigator.userAgent)) location.href = "instagram://story-camera";
+  else window.open("https://www.instagram.com/", "_blank", "noopener");
+  return copiada
+    ? "Abrindo o Instagram. A imagem foi copiada: crie um Story e cole (Ctrl+V ou segure o dedo na tela)."
+    : 'Abrindo o Instagram. Se precisar da imagem, use o botão "Só baixar o Story".';
 }
 
 export async function baixarCanvas(canvas, nomeArquivo) {

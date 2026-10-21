@@ -13,7 +13,7 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return logado() && request.auth.token.email == 'admin@seudominio.com';
+      return logado() && request.auth.token.email == 'pastorasimone@gmail.com';
     }
 
     function alunoAtual() {

@@ -74,7 +74,7 @@ function iniciar() {
   onSnapshot(collection(db, "alunos"), (s) => { todosAlunos = s.docs.map((d) => ({ id: d.id, ...d.data() })); marcar("alunos"); }, erro);
   onSnapshot(collection(db, "materiais"), (s) => { materiais = s.docs.map((d) => ({ id: d.id, ...d.data() })); marcar("materiais"); }, erro);
   onSnapshot(collection(db, "lancamentos"), (s) => { lancamentos = s.docs.map((d) => ({ id: d.id, ...d.data() })); marcar("lancamentos"); }, erro);
-  onSnapshot(collection(db, "eventos"), (s) => { eventos = s.docs.map((d) => ({ id: d.id, ...d.data() })); aoAtualizarEventos(); marcar("eventos"); }, erro);
+  onSnapshot(collection(db, "eventos"), (s) => { eventos = s.docs.map((d) => ({ id: d.id, ...d.data() })); aoAtualizarEventos(); marcar("eventos"); }, (e) => { console.error("eventos:", e); toast("Não foi possível carregar os eventos (" + (e.code || "erro") + "). Publique as regras do arquivo firestore.rules no Firebase.", true); $("#carregando").classList.add("hidden"); });
 }
 
 // ===================== NAVEGAÇÃO =====================
