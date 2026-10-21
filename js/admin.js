@@ -1007,6 +1007,7 @@ function editorEvento() {
     <div class="panel-head"><h2>${esc(ev.nome)}</h2><div class="row-actions" style="flex-wrap:wrap">${badge(...statusEvento[st])}</div></div>
     <div class="ev-link"><span>Link do site:</span><code>${esc(linkEvento(ev))}</code>
       <button class="btn btn-ghost btn-sm" data-act="copiar-link-evento"><i class="fa-regular fa-copy"></i> Copiar</button>
+      <button class="btn btn-ghost btn-sm" data-act="qr-evento"><i class="fa-solid fa-qrcode"></i> QR Code</button>
       <a class="btn btn-ghost btn-sm" href="${esc(linkEvento(ev))}" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i> Ver site</a>
       ${botoesStatus}</div>
     ${st === "rascunho" ? '<p class="help" style="margin:-8px 0 16px;color:var(--text-muted);font-size:.84rem">Em rascunho o site não abre para o público. Confira tudo e clique em Publicar.</p>' : ""}
@@ -1098,10 +1099,10 @@ function secaoEvento(ev) {
         <div class="kpi"><div class="label">No Grupo VIP</div><div class="value">${noGrupo}</div></div></div>
       <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center"><span class="help" style="color:var(--text-muted);font-size:.84rem">Atualiza sozinho quando alguém se inscreve.</span>
         <button type="button" class="btn btn-ghost btn-sm" data-act="exportar-inscritos" ${inscritos.length ? "" : "disabled"}><i class="fa-solid fa-file-csv"></i> Exportar planilha</button></div>
-      <div class="table-wrap"><table><thead><tr><th>Nome</th><th>WhatsApp</th>${ev.campos?.email ? "<th>E-mail</th>" : ""}<th>Cidade</th><th>Igreja</th><th>Data</th><th>No grupo</th><th></th></tr></thead>
+      <div class="table-wrap"><table><thead><tr><th>Nome</th><th>WhatsApp</th>${ev.campos?.email ? "<th>E-mail</th>" : ""}<th>Cidade</th><th>Igreja</th><th>Pagamento</th><th>Data</th><th>No grupo</th><th></th></tr></thead>
       <tbody>${inscritos.map((i) => `<tr><td><strong style="font-weight:500">${esc(i.nome)}</strong></td>
         <td style="white-space:nowrap">${linkWhatsapp(i.whatsapp) ? `<a href="${esc(linkWhatsapp(i.whatsapp))}" target="_blank" rel="noopener" style="color:var(--green)"><i class="fa-brands fa-whatsapp"></i> ${esc(i.whatsapp)}</a>` : esc(i.whatsapp)}</td>
-        ${ev.campos?.email ? `<td>${esc(i.email || "—")}</td>` : ""}<td>${esc(i.cidade || "—")}</td><td>${esc(i.igreja || "—")}</td>
+        ${ev.campos?.email ? `<td>${esc(i.email || "—")}</td>` : ""}<td>${esc(i.cidade || "—")}</td><td>${esc(i.igreja || "—")}</td><td>${esc(i.formaPagamento || "—")}</td>
         <td style="white-space:nowrap">${dataInscricao(i)}</td>
         <td><input type="checkbox" data-nogrupo="${i.id}" ${i.noGrupo ? "checked" : ""} aria-label="Está no grupo" style="accent-color:var(--primary);width:18px;height:18px" /></td>
         <td><button type="button" class="icon-btn danger" title="Excluir inscrição" data-act="excluir-inscricao" data-id="${i.id}"><i class="fa-solid fa-trash"></i></button></td></tr>`).join("") || `<tr><td colspan="8" class="empty">Nenhuma inscrição ainda. Compartilhe o link do site!</td></tr>`}</tbody></table></div></div>`;
@@ -1267,6 +1268,7 @@ document.addEventListener("click", async (e) => {
       if (await salvarEvento({ status })) toast(msg);
       return;
     }
+    case "qr-evento": return qrEvento();
     case "copiar-link-evento": {
       const url = linkEvento(evRascunho);
       try { await navigator.clipboard.writeText(url); toast("Link copiado"); }
@@ -1292,8 +1294,8 @@ document.addEventListener("click", async (e) => {
     }
     case "exportar-inscritos":
       return baixarCsv(`inscritos-${evRascunho.slug}.csv`, [
-        ["Nome", "WhatsApp", "E-mail", "Cidade", "Igreja", "Data", "No grupo"],
-        ...inscritos.map((i) => [i.nome, i.whatsapp, i.email || "", i.cidade || "", i.igreja || "", dataInscricao(i), i.noGrupo ? "Sim" : "Não"]),
+        ["Nome", "WhatsApp", "E-mail", "Cidade", "Igreja", "Pagamento", "Data", "No grupo"],
+        ...inscritos.map((i) => [i.nome, i.whatsapp, i.email || "", i.cidade || "", i.igreja || "", i.formaPagamento || "", dataInscricao(i), i.noGrupo ? "Sim" : "Não"]),
       ]);
   }
 });
@@ -1311,4 +1313,27 @@ function avisarInscricoes(s) {
     if (primeira || antes === undefined || n <= antes) return;
     toast(`Nova inscrição em ${dados.nome || "evento"} (${n} inscritos)`);
   });
+}
+
+// QR Code do link de inscrição do evento (para cartaz, Story e impressão)
+async function qrEvento() {
+  const ev = evRascunho;
+  if (!ev) return;
+  const url = linkEvento(ev);
+  try {
+    const QR = (await import("https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm")).default;
+    const png = await QR.toDataURL(url, { width: 1024, margin: 2, errorCorrectionLevel: "M", color: { dark: "#1a1510", light: "#ffffff" } });
+    $("#formModalBody").innerHTML = `<h2 style="margin-bottom:6px">QR Code · ${esc(ev.nome)}</h2>
+      <p style="color:var(--text-muted);font-size:.9rem;margin:0 0 14px">Quem apontar a câmera do celular abre a página de inscrição.</p>
+      <div style="display:grid;gap:14px;justify-items:center">
+        <img src="${png}" alt="QR Code do link do evento" style="width:260px;max-width:100%;border:1px solid var(--border,#ddd);border-radius:8px" />
+        <code style="word-break:break-all;font-size:.8rem">${esc(url)}</code>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+          <a class="btn btn-red btn-sm" href="${png}" download="qr-${esc(ev.slug || "evento")}.png"><i class="fa-solid fa-download"></i> Baixar QR Code</a>
+          <button class="btn btn-ghost btn-sm" data-close-modal>Fechar</button></div></div>`;
+    abrirModal("#formModal");
+  } catch (e) {
+    console.error(e);
+    toast("Não foi possível gerar o QR Code. Verifique a internet e tente de novo.", true);
+  }
 }
