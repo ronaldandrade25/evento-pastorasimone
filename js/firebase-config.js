@@ -16,3 +16,8 @@ export const firebaseConfig = {
 // Quem fizer login com este e-mail entra no painel da Pastora (admin.html).
 // IMPORTANTE: use o MESMO e-mail no arquivo firestore.rules.
 export const SUPERADMIN_EMAIL = "pastorasimone@gmail.com";
+
+// Chave VAPID das notificações push (avisos com o app fechado).
+// Firebase Console > Configurações do projeto > Cloud Messaging > Certificados push da Web > Gerar par de chaves.
+// Cole abaixo a "Chave pública" (começa com B...).
+export const VAPID_KEY = "COLE_A_CHAVE_VAPID_AQUI";

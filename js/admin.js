@@ -13,6 +13,7 @@ import {
   renderEvento, atualizarContagem, EVENTO_PADRAO, EVENTO_FORTALEZAS, TEMAS, dataCurta, vagasRestantes, mapsUrl, youtubeId,
 } from "./evento-site.js";
 import "./pwa.js";
+import { pushSuportado, pushAtivo, ativarPush } from "./push.js";
 import { abrirVideo } from "./player.js";
 
 // ===================== ESTADO =====================
@@ -74,7 +75,7 @@ function iniciar() {
   onSnapshot(collection(db, "alunos"), (s) => { todosAlunos = s.docs.map((d) => ({ id: d.id, ...d.data() })); marcar("alunos"); }, erro);
   onSnapshot(collection(db, "materiais"), (s) => { materiais = s.docs.map((d) => ({ id: d.id, ...d.data() })); marcar("materiais"); }, erro);
   onSnapshot(collection(db, "lancamentos"), (s) => { lancamentos = s.docs.map((d) => ({ id: d.id, ...d.data() })); marcar("lancamentos"); }, erro);
-  onSnapshot(collection(db, "eventos"), (s) => { eventos = s.docs.map((d) => ({ id: d.id, ...d.data() })); aoAtualizarEventos(); marcar("eventos"); }, (e) => { console.error("eventos:", e); toast("Não foi possível carregar os eventos (" + (e.code || "erro") + "). Publique as regras do arquivo firestore.rules no Firebase.", true); $("#carregando").classList.add("hidden"); });
+  onSnapshot(collection(db, "eventos"), (s) => { avisarInscricoes(s); eventos = s.docs.map((d) => ({ id: d.id, ...d.data() })); aoAtualizarEventos(); marcar("eventos"); }, (e) => { console.error("eventos:", e); toast("Não foi possível carregar os eventos (" + (e.code || "erro") + "). Publique as regras do arquivo firestore.rules no Firebase.", true); $("#carregando").classList.add("hidden"); });
 }
 
 // ===================== NAVEGAÇÃO =====================
@@ -983,7 +984,7 @@ function pgEventos() {
     </button>`).join("");
   return `
   <div class="page-head"><div><h1>Eventos</h1><p>Site de divulgação e inscrições de cada evento</p></div>
-    <div class="actions"><button class="btn btn-red btn-sm" data-act="novo-evento"><i class="fa-solid fa-plus"></i> Novo evento</button></div></div>
+    <div class="actions">${pushSuportado() && !pushAtivo() ? '<button class="btn btn-ghost btn-sm" data-act="ativar-avisos"><i class="fa-regular fa-bell"></i> Ativar avisos de inscrição</button>' : ""}<button class="btn btn-red btn-sm" data-act="novo-evento"><i class="fa-solid fa-plus"></i> Novo evento</button></div></div>
   ${lista.length ? `<div class="ev-cards">${cards}</div>` : `
     <div class="panel"><div class="empty" style="display:grid;gap:14px;justify-items:center">
       <i class="fa-regular fa-calendar" style="font-size:2rem;color:var(--primary)"></i>
@@ -1246,6 +1247,12 @@ document.addEventListener("click", async (e) => {
   if (!b) return;
   switch (b.dataset.act) {
     case "abrir-evento": return abrirEvento(b.dataset.id);
+    case "ativar-avisos": {
+      b.disabled = true;
+      const erroPush = await ativarPush();
+      toast(erroPush || "Avisos ativados: você será notificada a cada inscrição, mesmo com o app fechado.", !!erroPush);
+      return render();
+    }
     case "novo-evento": return novoEvento(EVENTO_PADRAO);
     case "criar-fortalezas": return novoEvento(EVENTO_FORTALEZAS);
     case "excluir-evento": return excluirEvento();
@@ -1293,3 +1300,15 @@ document.addEventListener("click", async (e) => {
 
 window.addEventListener("beforeunload", (e) => { if (evSujo) { e.preventDefault(); e.returnValue = ""; } });
 setInterval(() => { const m = $("#evMini"); if (m && evRascunho) atualizarContagem(m, evRascunho); }, 30000);
+
+// Aviso dentro do painel quando o contador de inscritos sobe (a notificação com o app fechado vem do push).
+const inscritosVistos = new Map();
+function avisarInscricoes(s) {
+  const primeira = inscritosVistos.size === 0 && !s.metadata.hasPendingWrites;
+  s.docs.forEach((d) => {
+    const dados = d.data(), n = Number(dados.inscritos) || 0, antes = inscritosVistos.get(d.id);
+    inscritosVistos.set(d.id, n);
+    if (primeira || antes === undefined || n <= antes) return;
+    toast(`Nova inscrição em ${dados.nome || "evento"} (${n} inscritos)`);
+  });
+}

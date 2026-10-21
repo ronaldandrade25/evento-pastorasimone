@@ -49,3 +49,25 @@ export function ligarBotoesInstalar() {
     });
   });
 }
+
+// ---------- Avisos (notificações) ----------
+export const avisosSuportados = () => "Notification" in window;
+export const avisosAtivos = () => avisosSuportados() && Notification.permission === "granted";
+export async function pedirPermissaoAvisos() {
+  if (!avisosSuportados()) return "unsupported";
+  return Notification.permission === "default" ? Notification.requestPermission() : Notification.permission;
+}
+// Mostra a notificação pelo service worker (funciona no app instalado do celular); sem ele, usa a do navegador
+export async function avisar(titulo, corpo, url = "admin.html") {
+  if (!avisosAtivos()) return false;
+  const opcoes = { body: corpo, icon: "icons/icon-192.png", badge: "icons/icon-192.png", tag: "inscricao", renotify: true, data: { url } };
+  try {
+    const reg = await registrarSW();
+    if (reg?.showNotification) { await reg.showNotification(titulo, opcoes); return true; }
+    new Notification(titulo, opcoes);
+    return true;
+  } catch (e) {
+    console.error("Aviso:", e);
+    return false;
+  }
+}

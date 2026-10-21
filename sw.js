@@ -31,3 +31,27 @@ self.addEventListener("fetch", (e) => {
       .catch(() => caches.match(req).then((r) => r || (req.mode === "navigate" ? caches.match("./login.html") : Response.error())))
   );
 });
+
+// Toque na notificação de nova inscrição: abre (ou volta para) o painel
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || "admin.html";
+  e.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((abas) => {
+      const aba = abas.find((c) => c.url.includes("admin.html"));
+      return aba ? aba.focus() : self.clients.openWindow(url);
+    })
+  );
+});
+
+// Aviso push (enviado pela Cloud Function, mesmo com o app fechado)
+self.addEventListener("push", (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch { /* sem conteúdo */ }
+  const dados = d.data || d;
+  e.waitUntil(self.registration.showNotification(dados.titulo || "Nova inscrição", {
+    body: dados.corpo || "Chegou uma nova inscrição no evento.",
+    icon: "icons/icon-192.png", badge: "icons/icon-192.png", tag: "inscricao", renotify: true,
+    data: { url: dados.url || "admin.html" },
+  }));
+});
