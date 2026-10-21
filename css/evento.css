@@ -23,7 +23,7 @@
 .e-top nav { display: flex; gap: 22px; font-size: .86rem; color: var(--e-soft); }
 .e-top nav a { text-decoration: none; color: inherit; }
 .e-top nav a:hover { color: var(--e-gold); }
-.e-hero { position: relative; display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.25fr) minmax(0, .8fr); align-items: center; min-height: 560px; overflow: hidden;
+.e-hero { position: relative; display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.25fr); align-items: center; min-height: 560px; overflow: hidden;
   background: radial-gradient(ellipse at 70% 40%, color-mix(in srgb, var(--e-gold) 10%, transparent), transparent 60%), var(--e-bg); }
 .e-hero .pic { align-self: stretch; background: center top / cover no-repeat; -webkit-mask-image: linear-gradient(90deg, #000 55%, transparent); mask-image: linear-gradient(90deg, #000 55%, transparent); min-height: 320px; }
 .e-hero .title { padding: 48px 24px; display: grid; gap: 18px; }

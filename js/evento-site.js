@@ -92,16 +92,6 @@ function tituloHtml(ev) {
   return p.length > 1 ? `${esc(p[0])}<br />${esc(p.slice(1).join(" "))}` : esc(ev.nome);
 }
 
-function cartaoVip(ev) {
-  const grupo = urlSegura(ev.grupoVip);
-  const qr = ev.mostrarQr && imgSegura(ev.qrCode);
-  if (!grupo && !qr) return "";
-  return `<aside class="e-vip"><span class="seal"><img src="${LOGO}" alt="" /></span><h3>Grupo VIP</h3>
-    ${qr ? `<img class="qr" src="${esc(qr)}" alt="QR Code do Grupo VIP no WhatsApp" />` : ""}
-    <p>${qr ? "Aponte a câmera do celular<br />e entre no grupo do <b>WhatsApp</b>" : "Receba os avisos do evento no <b>WhatsApp</b>"}</p>
-    ${grupo ? `<a class="e-btn wa" href="${esc(grupo)}" target="_blank" rel="noopener">${ICONE_WA} Entrar no grupo</a>` : ""}</aside>`;
-}
-
 function formularioHtml(ev, pre) {
   if (ev.status === "encerrado") return `<div class="e-esgotado"><h3>Inscrições encerradas</h3><p>Obrigado pelo interesse. Fique de olho nos próximos eventos.</p></div>`;
   if (vagasRestantes(ev) <= 0) return `<div class="e-esgotado"><h3>Vagas esgotadas</h3><p>Todas as vagas foram preenchidas.</p></div>`;
@@ -145,7 +135,6 @@ export function renderEvento(root, ev, opcoes = {}) {
       <div class="when"><span>${esc(dataLonga(ev))}</span>${ev.hora ? `<span>${esc(ev.hora)}h</span>` : ""}${ev.valor ? `<span>${esc(ev.valor)}</span>` : ""}</div>
       <div class="acts"><a class="e-btn" href="#${pre}-insc">Quero me inscrever</a>${temVideo ? `<button class="e-btn ghost" type="button" data-ev-video>${ICONE_PLAY.replace("<svg", '<svg style="width:12px"')} Assistir convite</button>` : ""}</div>
     </div>
-    ${cartaoVip(ev)}
     ${ev.frase ? `<p class="e-quote">“${esc(ev.frase)}”</p>` : ""}
   </section>
   ${ev.data ? `<div class="e-count"><div class="e-wrap"><span class="lbl">Faltam</span><div class="nums" data-count></div></div></div>` : ""}
