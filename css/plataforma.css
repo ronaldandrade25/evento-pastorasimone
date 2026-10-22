@@ -439,6 +439,7 @@ td small.sub-cell { display: block; color: var(--text-muted); }
 .ev-acoes { display: flex; gap: 10px; flex-wrap: wrap; border-top: 1px solid var(--border); padding-top: 16px; }
 .ev-sujo { font-size: 0.82rem; color: var(--yellow); align-self: center; }
 .kpis.k3 { grid-template-columns: repeat(3, 1fr); }
+.kpis.k4 { grid-template-columns: repeat(4, 1fr); }
 
 /* BARRA SUPERIOR DO CELULAR (só aparece no mobile) */
 .topbar-mobile, .menu-overlay { display: none; }
@@ -474,7 +475,7 @@ td small.sub-cell { display: block; color: var(--text-muted); }
 @media (max-width: 600px) {
   section.block { padding: 56px 0; }
   .hero { padding: 44px 0 52px; }
-  .benefits, .modules, .testimonials, .pricing, .kpis, .kpis.k3 { grid-template-columns: minmax(0, 1fr); }
+  .benefits, .modules, .testimonials, .pricing, .kpis, .kpis.k3, .kpis.k4 { grid-template-columns: minmax(0, 1fr); }
   .benefit, .kpi { border-left: 0 !important; border-top: 1px solid var(--border); }
   .benefit:first-child, .kpi:first-child { border-top: 0; }
   .form-grid, .ev-cores { grid-template-columns: minmax(0, 1fr); }
@@ -486,3 +487,23 @@ td small.sub-cell { display: block; color: var(--text-muted); }
   .ev-img { grid-template-columns: 90px minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* Eventos > Inscritos: cards e KPIs que se ajustam à largura disponível */
+.ev-sec .kpis { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.ev-sec .kpi { padding: 14px 16px; border-left: 0; border-top: 1px solid var(--border); margin-top: -1px; }
+.ev-sec .kpi:first-child { border-top: 1px solid var(--border); }
+.ev-sec .kpi .value { font-size: clamp(1.15rem, 2vw, 1.55rem); white-space: nowrap; overflow-wrap: normal; }
+.ev-sec .kpi .label { font-size: 0.68rem; letter-spacing: 0.06em; }
+.insc-lista { display: grid; gap: 10px; }
+.insc { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 12px 14px; border: 1px solid var(--border); background: var(--bg-main); }
+.insc.pago { border-left: 3px solid var(--green); }
+.insc-info { display: grid; gap: 2px; min-width: 0; }
+.insc-info strong { font-weight: 500; overflow-wrap: anywhere; }
+.insc-info small { color: var(--text-muted); overflow-wrap: anywhere; }
+.insc-wpp { color: var(--green); overflow-wrap: anywhere; }
+.insc-pago { white-space: nowrap; gap: 8px; }
+@media (max-width: 560px) {
+  .insc { grid-template-columns: minmax(0, 1fr) auto; }
+  .insc-pago { grid-column: 1; grid-row: 2; }
+  .ev-sec .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

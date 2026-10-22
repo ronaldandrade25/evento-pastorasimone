@@ -1091,25 +1091,37 @@ function secaoEvento(ev) {
       ${campoEv("grupoVip", "Link do Grupo VIP no WhatsApp", 'placeholder="https://chat.whatsapp.com/..."', "url")}
       ${checkEv("mostrarQr", "Mostrar o QR Code do Grupo VIP no site (envie a imagem em Cores e imagens)")}</div>`;
     case "inscritos": {
-      const noGrupo = inscritos.filter((i) => i.noGrupo).length;
+      const pagos = inscritos.filter((i) => i.pago).length;
+      const preco = valorAnunciado(ev);
       return `<div class="ev-sec">
-      <div class="kpis k3" style="margin:0">
+      <div class="kpis k4" style="margin:0">
         <div class="kpi"><div class="label">Inscritos</div><div class="value">${Number(ev.inscritos) || 0}</div></div>
         <div class="kpi"><div class="label">Vagas restantes</div><div class="value">${vagasRestantes(ev)}</div></div>
-        <div class="kpi"><div class="label">No Grupo VIP</div><div class="value">${noGrupo}</div></div></div>
+        <div class="kpi"><div class="label">Pagos</div><div class="value">${pagos}</div></div>
+        <div class="kpi"><div class="label">Faturamento</div><div class="value">${brl(pagos * preco)}</div>${preco ? "" : '<div class="delta">Sem valor no anúncio (aba Geral › Valor)</div>'}</div></div>
       <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center"><span class="help" style="color:var(--text-muted);font-size:.84rem">Atualiza sozinho quando alguém se inscreve.</span>
         <button type="button" class="btn btn-ghost btn-sm" data-act="exportar-inscritos" ${inscritos.length ? "" : "disabled"}><i class="fa-solid fa-file-csv"></i> Exportar planilha</button></div>
-      <div class="table-wrap"><table><thead><tr><th>Nome</th><th>WhatsApp</th>${ev.campos?.email ? "<th>E-mail</th>" : ""}<th>Cidade</th><th>Igreja</th><th>Pagamento</th><th>Data</th><th>No grupo</th><th></th></tr></thead>
-      <tbody>${inscritos.map((i) => `<tr><td><strong style="font-weight:500">${esc(i.nome)}</strong></td>
-        <td style="white-space:nowrap">${linkWhatsapp(i.whatsapp) ? `<a href="${esc(linkWhatsapp(i.whatsapp))}" target="_blank" rel="noopener" style="color:var(--green)"><i class="fa-brands fa-whatsapp"></i> ${esc(i.whatsapp)}</a>` : esc(i.whatsapp)}</td>
-        ${ev.campos?.email ? `<td>${esc(i.email || "—")}</td>` : ""}<td>${esc(i.cidade || "—")}</td><td>${esc(i.igreja || "—")}</td><td>${esc(i.formaPagamento || "—")}</td>
-        <td style="white-space:nowrap">${dataInscricao(i)}</td>
-        <td><input type="checkbox" data-nogrupo="${i.id}" ${i.noGrupo ? "checked" : ""} aria-label="Está no grupo" style="accent-color:var(--primary);width:18px;height:18px" /></td>
-        <td><button type="button" class="icon-btn danger" title="Excluir inscrição" data-act="excluir-inscricao" data-id="${i.id}"><i class="fa-solid fa-trash"></i></button></td></tr>`).join("") || `<tr><td colspan="8" class="empty">Nenhuma inscrição ainda. Compartilhe o link do site!</td></tr>`}</tbody></table></div></div>`;
+      <div class="insc-lista">${inscritos.map((i) => {
+        const det = [i.cidade, i.igreja, i.formaPagamento, ev.campos?.email ? i.email : ""].filter(Boolean).map(esc).join(" · ");
+        return `<div class="insc ${i.pago ? "pago" : ""}">
+        <div class="insc-info">
+          <strong>${esc(i.nome)}</strong>
+          ${linkWhatsapp(i.whatsapp) ? `<a href="${esc(linkWhatsapp(i.whatsapp))}" target="_blank" rel="noopener" class="insc-wpp"><i class="fa-brands fa-whatsapp"></i> ${esc(i.whatsapp)}</a>` : `<span>${esc(i.whatsapp)}</span>`}
+          ${det ? `<small>${det}</small>` : ""}
+          <small>${dataInscricao(i)}</small>
+        </div>
+        <label class="check insc-pago"><input type="checkbox" data-pago="${i.id}" ${i.pago ? "checked" : ""} aria-label="Pagamento confirmado" style="accent-color:var(--primary);width:18px;height:18px" /> ${i.pago ? `Pago${preco ? " · " + brl(preco) : ""}` : "Pendente"}</label>
+        <button type="button" class="icon-btn danger" title="Excluir inscrição" data-act="excluir-inscricao" data-id="${i.id}"><i class="fa-solid fa-trash"></i></button></div>`;
+      }).join("") || `<div class="empty">Nenhuma inscrição ainda. Compartilhe o link do site!</div>`}</div></div>`;
     }
   }
   return "";
 }
+// Extrai o número do valor anunciado ("R$ 30,00", "30 reais"; "Entrada gratuita" = 0)
+const valorAnunciado = (ev) => {
+  const m = String(ev?.valor || "").match(/\d[\d.]*(?:,\d{1,2})?/);
+  return m ? Number(m[0].replace(/\./g, "").replace(",", ".")) || 0 : 0;
+};
 const dataInscricao = (i) => {
   const d = i.criadoEm?.toDate?.();
   return d ? d.toLocaleDateString("pt-BR") + " " + d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "agora";
@@ -1191,8 +1203,8 @@ function ligarEditorEvento(main) {
       render();
     } catch (e) { toast(e.message, true); }
   }));
-  $$("[data-nogrupo]", form).forEach((c) => c.addEventListener("change", () =>
-    salvar(() => updateDoc(doc(db, "eventos", evSel, "inscricoes", c.dataset.nogrupo), { noGrupo: c.checked }))));
+  $$("[data-pago]", form).forEach((c) => c.addEventListener("change", () =>
+    salvar(() => updateDoc(doc(db, "eventos", evSel, "inscricoes", c.dataset.pago), { pago: c.checked }))));
   form.addEventListener("submit", async (e) => { e.preventDefault(); await salvarEvento(); });
 }
 
@@ -1294,8 +1306,8 @@ document.addEventListener("click", async (e) => {
     }
     case "exportar-inscritos":
       return baixarCsv(`inscritos-${evRascunho.slug}.csv`, [
-        ["Nome", "WhatsApp", "E-mail", "Cidade", "Igreja", "Pagamento", "Data", "No grupo"],
-        ...inscritos.map((i) => [i.nome, i.whatsapp, i.email || "", i.cidade || "", i.igreja || "", i.formaPagamento || "", dataInscricao(i), i.noGrupo ? "Sim" : "Não"]),
+        ["Nome", "WhatsApp", "E-mail", "Cidade", "Igreja", "Pagamento", "Data", "Pago", "Valor pago"],
+        ...inscritos.map((i) => [i.nome, i.whatsapp, i.email || "", i.cidade || "", i.igreja || "", i.formaPagamento || "", dataInscricao(i), i.pago ? "Sim" : "Não", i.pago ? String(valorAnunciado(evRascunho)).replace(".", ",") : "0"]),
       ]);
   }
 });
